@@ -1,4 +1,4 @@
-local BASE = "https://raw.githubusercontent.com/nilo23475/OpenHub/main"
+local BASE = "https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main"
 
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -10,8 +10,8 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 320, 0, 440)
-frame.Position = UDim2.new(0.5, -160, 0.5, -220)
+frame.Size = UDim2.new(0, 320, 0, 460)
+frame.Position = UDim2.new(0.5, -160, 0.5, -230)
 frame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
 frame.BorderSizePixel = 0
 frame.Parent = gui
@@ -76,16 +76,45 @@ UIS.InputChanged:Connect(function(input)
     end
 end)
 
-local function addToggle(name, file, globalName)
+local function addToggle(name, file, globalName, configKey, defaultValue)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 36)
+    row.BackgroundTransparency = 1
+    row.Parent = list
+
+    local hasConfig = configKey ~= nil
+    if hasConfig then
+        _G[configKey] = _G[configKey] or defaultValue or 50
+    end
+
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.Size = UDim2.new(1, hasConfig and -70 or 0, 1, 0)
     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
     btn.BorderSizePixel = 0
     btn.Text = name .. "  [OFF]"
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 13
-    btn.Parent = list
+    btn.Parent = row
+
+    if hasConfig then
+        local box = Instance.new("TextBox")
+        box.Size = UDim2.new(0, 64, 1, 0)
+        box.Position = UDim2.new(1, -64, 0, 0)
+        box.BackgroundColor3 = Color3.fromRGB(40, 40, 46)
+        box.BorderSizePixel = 0
+        box.Text = tostring(_G[configKey])
+        box.TextColor3 = Color3.new(1, 1, 1)
+        box.Font = Enum.Font.Gotham
+        box.TextSize = 13
+        box.ClearTextOnFocus = false
+        box.Parent = row
+        box.FocusLost:Connect(function()
+            local n = tonumber(box.Text)
+            if n then _G[configKey] = n end
+            box.Text = tostring(_G[configKey])
+        end)
+    end
 
     local loaded, enabled = false, false
 
@@ -117,8 +146,8 @@ local function addToggle(name, file, globalName)
     end)
 end
 
-addToggle("Fullbright",        "fullbright.lua",     "FullbrightScript")
-addToggle("Teleport to Mouse", "tpmouse.lua",        "TPMouseScript")
-addToggle("Fly",               "fly.lua",            "FlyScript")
-addToggle("Speed (50)",        "speed.lua",          "SpeedScript")
-addToggle("Infinite Jump",     "infinitejump.lua",   "InfiniteJumpScript")
+addToggle("Fullbright",        "fullbright.lua",   "FullbrightScript")
+addToggle("Teleport to Mouse", "tpmouse.lua",      "TPMouseScript")
+addToggle("Fly",               "fly.lua",          "FlyScript",         "FlySpeed",   50)
+addToggle("Speed",             "speed.lua",        "SpeedScript",       "SpeedValue", 50)
+addToggle("Infinite Jump",     "infinitejump.lua", "InfiniteJumpScript")
