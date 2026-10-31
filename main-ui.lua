@@ -283,6 +283,7 @@ local CATEGORIES = {
         items = {
             { type = "folder", name = "Driving Empire", items = {
                 { type = "button", name = "Halloween Event", file = "driving-empire/halloween-event.lua" },
+                { type = "button", name = "Index Hub", file = "driving-empire/index-hub.lua" },
             }},
         }
     }
