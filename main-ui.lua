@@ -77,30 +77,25 @@ UIS.InputChanged:Connect(function(input)
 end)
 
 local function addToggle(name, file, globalName, configKey, defaultValue)
-    local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, 0, 0, 36)
-    row.BackgroundTransparency = 1
-    row.Parent = list
-
     local hasConfig = configKey ~= nil
     if hasConfig then
         _G[configKey] = _G[configKey] or defaultValue or 50
     end
 
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, hasConfig and -70 or 0, 1, 0)
+    btn.Size = UDim2.new(1, hasConfig and -78 or 0, 0, 36)
     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
     btn.BorderSizePixel = 0
     btn.Text = name .. "  [OFF]"
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 13
-    btn.Parent = row
+    btn.Active = true
+    btn.Parent = list
 
     if hasConfig then
         local box = Instance.new("TextBox")
-        box.Size = UDim2.new(0, 64, 1, 0)
-        box.Position = UDim2.new(1, -64, 0, 0)
+        box.Size = UDim2.new(0, 68, 0, 36)
         box.BackgroundColor3 = Color3.fromRGB(40, 40, 46)
         box.BorderSizePixel = 0
         box.Text = tostring(_G[configKey])
@@ -108,7 +103,7 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
         box.Font = Enum.Font.Gotham
         box.TextSize = 13
         box.ClearTextOnFocus = false
-        box.Parent = row
+        box.Parent = list
         box.FocusLost:Connect(function()
             local n = tonumber(box.Text)
             if n then _G[configKey] = n end
@@ -129,17 +124,33 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
                 if not ok then
                     warn("[Hub] " .. file .. ": " .. tostring(err))
                     enabled = false
+                    btn.Text = name .. "  [OFF]"
+                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
                     return
                 end
                 loaded = true
             end
             local api = _G[globalName]
-            if api and api.Start then api.Start() end
+            if api and api.Start then
+                local ok, err = pcall(api.Start)
+                if not ok then
+                    warn("[Hub] " .. globalName .. ".Start: " .. tostring(err))
+                    enabled = false
+                    btn.Text = name .. "  [OFF]"
+                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
+                    return
+                end
+            end
             btn.Text = name .. "  [ON]"
             btn.BackgroundColor3 = Color3.fromRGB(30, 130, 70)
         else
             local api = _G[globalName]
-            if api and api.Stop then api.Stop() end
+            if api and api.Stop then
+                local ok, err = pcall(api.Stop)
+                if not ok then
+                    warn("[Hub] " .. globalName .. ".Stop: " .. tostring(err))
+                end
+            end
             btn.Text = name .. "  [OFF]"
             btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
         end

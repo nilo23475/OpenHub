@@ -16,7 +16,10 @@ function FlyScript.Start()
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.PlatformStand = true end
+    if hum then
+        hum.PlatformStand = true
+        hum:ChangeState(Enum.HumanoidStateType.Physics)
+    end
 
     bodyVel = Instance.new("BodyVelocity")
     bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -48,7 +51,7 @@ function FlyScript.Start()
         if dir.Magnitude > 0 then dir = dir.Unit end
 
         local v = 0
-        if UIS:IsKeyDown(Enum.KeyCode.Space)      then v += 1 end
+        if UIS:IsKeyDown(Enum.KeyCode.Space)       then v += 1 end
         if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then v -= 1 end
 
         local speed = _G.FlySpeed or 50
