@@ -291,7 +291,14 @@ local CATEGORIES = {
         name = "Tools",
         items = {
             { type = "button", name = "SimpleSpy", file = "simple-spy.lua" },
-            { type = "button", name = "Job ID Copier", file = "copy-jobID.lua" },
+            { type = "button", name = "Copy job ID to clipboard", file = "copy-jobID.lua" },
+        }
+    },
+    {
+        name = "Universal",
+        items = {
+            { type = "button", name = "Infinite Yield", file = "infinite-yield.lua" },
+            { type = "button", name = "Dex++", file = "dex++.lua" },
         }
     }
 }
