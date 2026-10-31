@@ -2,7 +2,7 @@
 
 ## Usage
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/loader.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/nilo23475/OpenHub/main/loader.lua"))()
 
 ## Features
 
