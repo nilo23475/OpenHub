@@ -291,6 +291,7 @@ local CATEGORIES = {
         name = "Tools",
         items = {
             { type = "button", name = "SimpleSpy", file = "simple-spy.lua" },
+            { type = "button", name = "Job ID Copier", file = "copy-jobID.lua" },
         }
     }
 }
