@@ -110,8 +110,16 @@ end
 
 local Hub = {}
 Hub.sidebarButtons = {}
+Hub.toggleState = {}
 
 local function addToggle(item)
+    local key = (item.global or item.name) .. "|" .. (item.file or "")
+    local state = Hub.toggleState[key]
+    if not state then
+        state = { loaded = false, enabled = false }
+        Hub.toggleState[key] = state
+    end
+
     local hasConfig = item.config ~= nil
     if hasConfig then
         _G[item.config] = _G[item.config] or item.default or 50
@@ -124,10 +132,9 @@ local function addToggle(item)
 
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, hasConfig and -78 or 0, 1, 0)
-    btn.Position = UDim2.new(0, 0, 0, 0)
-    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
+    btn.BackgroundColor3 = state.enabled and Color3.fromRGB(30, 130, 70) or Color3.fromRGB(60, 60, 66)
     btn.BorderSizePixel = 0
-    btn.Text = item.name .. "  [OFF]"
+    btn.Text = item.name .. (state.enabled and "  [ON]" or "  [OFF]")
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 13
@@ -153,27 +160,30 @@ local function addToggle(item)
         end)
     end
 
-    local loaded, enabled = false, false
     btn.MouseButton1Click:Connect(function()
-        enabled = not enabled
-        if enabled then
-            if not loaded then
+        state.enabled = not state.enabled
+        if state.enabled then
+            if not state.loaded then
                 local ok, err = pcall(function()
                     loadstring(game:HttpGet(BASE .. "/scripts/" .. item.file))()
                 end)
                 if not ok then
                     warn("[OpenHub] " .. item.file .. ": " .. tostring(err))
-                    enabled = false
+                    state.enabled = false
+                    btn.Text = item.name .. "  [OFF]"
+                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
                     return
                 end
-                loaded = true
+                state.loaded = true
             end
             local api = _G[item.global]
             if api and api.Start then
                 local ok, err = pcall(api.Start)
                 if not ok then
                     warn("[OpenHub] " .. item.global .. ".Start: " .. tostring(err))
-                    enabled = false
+                    state.enabled = false
+                    btn.Text = item.name .. "  [OFF]"
+                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
                     return
                 end
             end
@@ -181,7 +191,12 @@ local function addToggle(item)
             btn.BackgroundColor3 = Color3.fromRGB(30, 130, 70)
         else
             local api = _G[item.global]
-            if api and api.Stop then pcall(api.Stop) end
+            if api and api.Stop then
+                local ok, err = pcall(api.Stop)
+                if not ok then
+                    warn("[OpenHub] " .. item.global .. ".Stop: " .. tostring(err))
+                end
+            end
             btn.Text = item.name .. "  [OFF]"
             btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
         end
