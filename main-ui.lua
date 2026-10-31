@@ -269,7 +269,7 @@ end
 
 local CATEGORIES = {
     {
-        name = "Universal",
+        name = "Main",
         items = {
             { type = "toggle", name = "Fullbright", file = "fullbright.lua", global = "FullbrightScript" },
             { type = "toggle", name = "Teleport to Mouse", file = "tpmouse.lua", global = "TPMouseScript" },
@@ -285,6 +285,12 @@ local CATEGORIES = {
                 { type = "button", name = "Halloween Event", file = "driving-empire/halloween-event.lua" },
                 { type = "button", name = "Index Hub", file = "driving-empire/index-hub.lua" },
             }},
+        }
+    },
+    {
+        name = "Tools",
+        items = {
+            { type = "button", name = "SimpleSpy", file = "simple-spy.lua" },
         }
     }
 }
@@ -317,4 +323,4 @@ for _, cat in ipairs(CATEGORIES) do
     end)
 end
 
-Hub.renderCategory("Universal")
+Hub.renderCategory("Main")
