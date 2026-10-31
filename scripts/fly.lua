@@ -15,9 +15,11 @@ function FlyScript.Start()
     local player = game.Players.LocalPlayer
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
+    local hum = char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.PlatformStand = true end
 
     bodyVel = Instance.new("BodyVelocity")
-    bodyVel.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
     bodyVel.Velocity = Vector3.zero
     bodyVel.Parent = hrp
 
@@ -26,20 +28,31 @@ function FlyScript.Start()
         local c = player.Character
         local r = c and c:FindFirstChild("HumanoidRootPart")
         if not r then return end
+        if bodyVel.Parent ~= r then bodyVel.Parent = r end
 
         local cam = workspace.CurrentCamera
+        if not cam then return end
+
+        local look = cam.CFrame.LookVector
+        local right = cam.CFrame.RightVector
+        local flatLook = Vector3.new(look.X, 0, look.Z)
+        local flatRight = Vector3.new(right.X, 0, right.Z)
+        if flatLook.Magnitude > 0 then flatLook = flatLook.Unit end
+        if flatRight.Magnitude > 0 then flatRight = flatRight.Unit end
+
         local dir = Vector3.zero
+        if UIS:IsKeyDown(Enum.KeyCode.W) then dir += flatLook end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= flatLook end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= flatRight end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then dir += flatRight end
+        if dir.Magnitude > 0 then dir = dir.Unit end
 
-        if UIS:IsKeyDown(Enum.KeyCode.W) then dir += cam.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then dir -= cam.CFrame.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then dir -= cam.CFrame.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
+        local v = 0
+        if UIS:IsKeyDown(Enum.KeyCode.Space)      then v += 1 end
+        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then v -= 1 end
 
-        local up = Vector3.zero
-        if UIS:IsKeyDown(Enum.KeyCode.Space)    then up = Vector3.new(0,  1, 0) end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftCtrl) then up = Vector3.new(0, -1, 0) end
-
-        bodyVel.Velocity = dir.Unit * 50 + up * 50
+        local speed = _G.FlySpeed or 50
+        bodyVel.Velocity = dir * speed + Vector3.new(0, v * speed, 0)
     end)
 end
 
@@ -48,4 +61,8 @@ function FlyScript.Stop()
     running = false
     if connection then connection:Disconnect(); connection = nil end
     if bodyVel then bodyVel:Destroy(); bodyVel = nil end
+
+    local char = game.Players.LocalPlayer.Character
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if hum then hum.PlatformStand = false end
 end
