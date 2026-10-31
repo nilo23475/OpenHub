@@ -10,8 +10,8 @@ gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 320, 0, 460)
-frame.Position = UDim2.new(0.5, -160, 0.5, -230)
+frame.Size = UDim2.new(0, 440, 0, 480)
+frame.Position = UDim2.new(0.5, -220, 0.5, -240)
 frame.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
 frame.BorderSizePixel = 0
 frame.Parent = gui
@@ -38,20 +38,44 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.Parent = frame
 closeBtn.MouseButton1Click:Connect(function() gui:Destroy() end)
 
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 100, 1, -36)
+sidebar.Position = UDim2.new(0, 0, 0, 36)
+sidebar.BackgroundColor3 = Color3.fromRGB(22, 22, 26)
+sidebar.BorderSizePixel = 0
+sidebar.Parent = frame
+
+local sidebarPad = Instance.new("UIPadding")
+sidebarPad.PaddingTop = UDim.new(0, 6)
+sidebarPad.PaddingLeft = UDim.new(0, 6)
+sidebarPad.PaddingRight = UDim.new(0, 6)
+sidebarPad.Parent = sidebar
+
+local sidebarLayout = Instance.new("UIListLayout")
+sidebarLayout.Padding = UDim.new(0, 4)
+sidebarLayout.SortOrder = Enum.SortOrder.LayoutOrder
+sidebarLayout.Parent = sidebar
+
+local content = Instance.new("Frame")
+content.Size = UDim2.new(1, -100, 1, -36)
+content.Position = UDim2.new(0, 100, 0, 36)
+content.BackgroundTransparency = 1
+content.Parent = frame
+
 local list = Instance.new("ScrollingFrame")
-list.Size = UDim2.new(1, -20, 1, -50)
-list.Position = UDim2.new(0, 10, 0, 42)
+list.Size = UDim2.new(1, -20, 1, -10)
+list.Position = UDim2.new(0, 10, 0, 5)
 list.BackgroundTransparency = 1
 list.BorderSizePixel = 0
 list.ScrollBarThickness = 4
 list.CanvasSize = UDim2.new(0, 0, 0, 0)
 list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-list.Parent = frame
+list.Parent = content
 
-local layout = Instance.new("UIListLayout")
-layout.Padding = UDim.new(0, 6)
-layout.SortOrder = Enum.SortOrder.LayoutOrder
-layout.Parent = list
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 6)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+listLayout.Parent = list
 
 local dragging, dragStart, startPos
 title.InputBegan:Connect(function(input)
@@ -76,31 +100,26 @@ UIS.InputChanged:Connect(function(input)
     end
 end)
 
-local function addCategory(name)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 26)
-    label.BackgroundColor3 = Color3.fromRGB(38, 38, 44)
-    label.BorderSizePixel = 0
-    label.Text = "   " .. name
-    label.TextColor3 = Color3.fromRGB(120, 180, 255)
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Font = Enum.Font.GothamBold
-    label.TextSize = 13
-    label.Parent = list
+local function clearList()
+    for _, child in ipairs(list:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
 end
 
-local function addToggle(name, file, globalName, configKey, defaultValue)
-    local hasConfig = configKey ~= nil
+local Hub = {}
+Hub.sidebarButtons = {}
+
+local function addToggle(item)
+    local hasConfig = item.config ~= nil
     if hasConfig then
-        _G[configKey] = _G[configKey] or defaultValue or 50
+        _G[item.config] = _G[item.config] or item.default or 50
     end
 
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 36)
-    row.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
-    row.BorderSizePixel = 0
-    row.Active = false
-    row.ZIndex = 1
+    row.BackgroundTransparency = 1
     row.Parent = list
 
     local btn = Instance.new("TextButton")
@@ -108,12 +127,11 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
     btn.Position = UDim2.new(0, 0, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
     btn.BorderSizePixel = 0
-    btn.Text = name .. "  [OFF]"
+    btn.Text = item.name .. "  [OFF]"
     btn.TextColor3 = Color3.new(1, 1, 1)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 13
     btn.Active = true
-    btn.ZIndex = 2
     btn.Parent = row
 
     if hasConfig then
@@ -122,70 +140,180 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
         box.Position = UDim2.new(1, -74, 0, 0)
         box.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
         box.BorderSizePixel = 0
-        box.Text = tostring(_G[configKey])
+        box.Text = tostring(_G[item.config])
         box.TextColor3 = Color3.new(1, 1, 1)
         box.Font = Enum.Font.Gotham
         box.TextSize = 13
         box.ClearTextOnFocus = false
-        box.Active = true
-        box.ZIndex = 2
         box.Parent = row
         box.FocusLost:Connect(function()
             local n = tonumber(box.Text)
-            if n then _G[configKey] = n end
-            box.Text = tostring(_G[configKey])
+            if n then _G[item.config] = n end
+            box.Text = tostring(_G[item.config])
         end)
     end
 
     local loaded, enabled = false, false
-
     btn.MouseButton1Click:Connect(function()
         enabled = not enabled
-
         if enabled then
             if not loaded then
                 local ok, err = pcall(function()
-                    loadstring(game:HttpGet(BASE .. "/scripts/" .. file))()
+                    loadstring(game:HttpGet(BASE .. "/scripts/" .. item.file))()
                 end)
                 if not ok then
-                    warn("[OpenHub] " .. file .. ": " .. tostring(err))
+                    warn("[OpenHub] " .. item.file .. ": " .. tostring(err))
                     enabled = false
-                    btn.Text = name .. "  [OFF]"
-                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
                     return
                 end
                 loaded = true
             end
-            local api = _G[globalName]
+            local api = _G[item.global]
             if api and api.Start then
                 local ok, err = pcall(api.Start)
                 if not ok then
-                    warn("[OpenHub] " .. globalName .. ".Start: " .. tostring(err))
+                    warn("[OpenHub] " .. item.global .. ".Start: " .. tostring(err))
                     enabled = false
-                    btn.Text = name .. "  [OFF]"
-                    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
                     return
                 end
             end
-            btn.Text = name .. "  [ON]"
+            btn.Text = item.name .. "  [ON]"
             btn.BackgroundColor3 = Color3.fromRGB(30, 130, 70)
         else
-            local api = _G[globalName]
-            if api and api.Stop then
-                local ok, err = pcall(api.Stop)
-                if not ok then
-                    warn("[OpenHub] " .. globalName .. ".Stop: " .. tostring(err))
-                end
-            end
-            btn.Text = name .. "  [OFF]"
+            local api = _G[item.global]
+            if api and api.Stop then pcall(api.Stop) end
+            btn.Text = item.name .. "  [OFF]"
             btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
         end
     end)
 end
 
-addCategory("Universal")
-addToggle("Fullbright",        "fullbright.lua",   "FullbrightScript")
-addToggle("Teleport to Mouse", "tpmouse.lua",      "TPMouseScript")
-addToggle("Fly",               "fly.lua",          "FlyScript",         "FlySpeed",   50)
-addToggle("Speed",             "speed.lua",        "SpeedScript",       "SpeedValue", 50)
-addToggle("Infinite Jump",     "infinitejump.lua", "InfiniteJumpScript")
+local function addButton(item)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
+    btn.BorderSizePixel = 0
+    btn.Text = item.name
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 13
+    btn.Active = true
+    btn.Parent = list
+    btn.MouseButton1Click:Connect(function()
+        local ok, err = pcall(function()
+            loadstring(game:HttpGet(BASE .. "/scripts/" .. item.file))()
+        end)
+        if not ok then
+            warn("[OpenHub] " .. item.file .. ": " .. tostring(err))
+        end
+    end)
+end
+
+local function addFolder(item, onOpen)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 55, 75)
+    btn.BorderSizePixel = 0
+    btn.Text = item.name .. "  >"
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 13
+    btn.Active = true
+    btn.Parent = list
+    btn.MouseButton1Click:Connect(onOpen)
+end
+
+Hub.renderView = function(items, backCallback)
+    clearList()
+    if backCallback then
+        local back = Instance.new("TextButton")
+        back.Size = UDim2.new(1, 0, 0, 30)
+        back.BackgroundColor3 = Color3.fromRGB(40, 40, 46)
+        back.BorderSizePixel = 0
+        back.Text = "< Back"
+        back.TextColor3 = Color3.fromRGB(120, 180, 255)
+        back.Font = Enum.Font.GothamBold
+        back.TextSize = 13
+        back.Active = true
+        back.Parent = list
+        back.MouseButton1Click:Connect(backCallback)
+    end
+
+    for _, item in ipairs(items) do
+        if item.type == "toggle" then
+            addToggle(item)
+        elseif item.type == "button" then
+            addButton(item)
+        elseif item.type == "folder" then
+            local thisBack = backCallback
+            local folderItems = item.items
+            local parentItems = items
+            addFolder(item, function()
+                Hub.renderView(folderItems, function()
+                    Hub.renderView(parentItems, thisBack)
+                end)
+            end)
+        end
+    end
+end
+
+Hub.setActiveCategory = function(name)
+    for catName, btn in pairs(Hub.sidebarButtons) do
+        if catName == name then
+            btn.BackgroundColor3 = Color3.fromRGB(50, 80, 130)
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        end
+    end
+end
+
+local CATEGORIES = {
+    {
+        name = "Universal",
+        items = {
+            { type = "toggle", name = "Fullbright", file = "fullbright.lua", global = "FullbrightScript" },
+            { type = "toggle", name = "Teleport to Mouse", file = "tpmouse.lua", global = "TPMouseScript" },
+            { type = "toggle", name = "Fly", file = "fly.lua", global = "FlyScript", config = "FlySpeed", default = 50 },
+            { type = "toggle", name = "Speed", file = "speed.lua", global = "SpeedScript", config = "SpeedValue", default = 50 },
+            { type = "toggle", name = "Infinite Jump", file = "infinitejump.lua", global = "InfiniteJumpScript" },
+        }
+    },
+    {
+        name = "Games",
+        items = {
+            { type = "folder", name = "Driving Empire", items = {
+                { type = "button", name = "Halloween Event", file = "driving-empire/halloween-event.lua" },
+            }},
+        }
+    }
+}
+
+Hub.renderCategory = function(name)
+    Hub.setActiveCategory(name)
+    for _, cat in ipairs(CATEGORIES) do
+        if cat.name == name then
+            Hub.renderView(cat.items, nil)
+            return
+        end
+    end
+end
+
+for _, cat in ipairs(CATEGORIES) do
+    local categoryName = cat.name
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+    btn.BorderSizePixel = 0
+    btn.Text = categoryName
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 13
+    btn.Active = true
+    btn.Parent = sidebar
+    Hub.sidebarButtons[categoryName] = btn
+    btn.MouseButton1Click:Connect(function()
+        Hub.renderCategory(categoryName)
+    end)
+end
+
+Hub.renderCategory("Universal")
