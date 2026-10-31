@@ -5,7 +5,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 local UIS = game:GetService("UserInputService")
 
 local gui = Instance.new("ScreenGui")
-gui.Name = "MyScriptHub"
+gui.Name = "OpenHub"
 gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
@@ -20,7 +20,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, -40, 0, 36)
 title.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
 title.BorderSizePixel = 0
-title.Text = "  My Script Hub"
+title.Text = "  OpenHub"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Font = Enum.Font.GothamBold
@@ -76,14 +76,36 @@ UIS.InputChanged:Connect(function(input)
     end
 end)
 
+local function addCategory(name)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 26)
+    label.BackgroundColor3 = Color3.fromRGB(38, 38, 44)
+    label.BorderSizePixel = 0
+    label.Text = "   " .. name
+    label.TextColor3 = Color3.fromRGB(120, 180, 255)
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 13
+    label.Parent = list
+end
+
 local function addToggle(name, file, globalName, configKey, defaultValue)
     local hasConfig = configKey ~= nil
     if hasConfig then
         _G[configKey] = _G[configKey] or defaultValue or 50
     end
 
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 36)
+    row.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
+    row.BorderSizePixel = 0
+    row.Active = false
+    row.ZIndex = 1
+    row.Parent = list
+
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, hasConfig and -78 or 0, 0, 36)
+    btn.Size = UDim2.new(1, hasConfig and -78 or 0, 1, 0)
+    btn.Position = UDim2.new(0, 0, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
     btn.BorderSizePixel = 0
     btn.Text = name .. "  [OFF]"
@@ -91,19 +113,23 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 13
     btn.Active = true
-    btn.Parent = list
+    btn.ZIndex = 2
+    btn.Parent = row
 
     if hasConfig then
         local box = Instance.new("TextBox")
-        box.Size = UDim2.new(0, 68, 0, 36)
-        box.BackgroundColor3 = Color3.fromRGB(40, 40, 46)
+        box.Size = UDim2.new(0, 72, 1, 0)
+        box.Position = UDim2.new(1, -74, 0, 0)
+        box.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
         box.BorderSizePixel = 0
         box.Text = tostring(_G[configKey])
         box.TextColor3 = Color3.new(1, 1, 1)
         box.Font = Enum.Font.Gotham
         box.TextSize = 13
         box.ClearTextOnFocus = false
-        box.Parent = list
+        box.Active = true
+        box.ZIndex = 2
+        box.Parent = row
         box.FocusLost:Connect(function()
             local n = tonumber(box.Text)
             if n then _G[configKey] = n end
@@ -122,7 +148,7 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
                     loadstring(game:HttpGet(BASE .. "/scripts/" .. file))()
                 end)
                 if not ok then
-                    warn("[Hub] " .. file .. ": " .. tostring(err))
+                    warn("[OpenHub] " .. file .. ": " .. tostring(err))
                     enabled = false
                     btn.Text = name .. "  [OFF]"
                     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
@@ -134,7 +160,7 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
             if api and api.Start then
                 local ok, err = pcall(api.Start)
                 if not ok then
-                    warn("[Hub] " .. globalName .. ".Start: " .. tostring(err))
+                    warn("[OpenHub] " .. globalName .. ".Start: " .. tostring(err))
                     enabled = false
                     btn.Text = name .. "  [OFF]"
                     btn.BackgroundColor3 = Color3.fromRGB(60, 60, 66)
@@ -148,7 +174,7 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
             if api and api.Stop then
                 local ok, err = pcall(api.Stop)
                 if not ok then
-                    warn("[Hub] " .. globalName .. ".Stop: " .. tostring(err))
+                    warn("[OpenHub] " .. globalName .. ".Stop: " .. tostring(err))
                 end
             end
             btn.Text = name .. "  [OFF]"
@@ -157,6 +183,7 @@ local function addToggle(name, file, globalName, configKey, defaultValue)
     end)
 end
 
+addCategory("Universal")
 addToggle("Fullbright",        "fullbright.lua",   "FullbrightScript")
 addToggle("Teleport to Mouse", "tpmouse.lua",      "TPMouseScript")
 addToggle("Fly",               "fly.lua",          "FlyScript",         "FlySpeed",   50)

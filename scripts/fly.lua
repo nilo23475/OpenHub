@@ -16,10 +16,7 @@ function FlyScript.Start()
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
     local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.PlatformStand = true
-        hum:ChangeState(Enum.HumanoidStateType.Physics)
-    end
+    if hum then hum.PlatformStand = true end
 
     bodyVel = Instance.new("BodyVelocity")
     bodyVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
@@ -31,7 +28,7 @@ function FlyScript.Start()
         local c = player.Character
         local r = c and c:FindFirstChild("HumanoidRootPart")
         if not r then return end
-        if bodyVel.Parent ~= r then bodyVel.Parent = r end
+        if bodyVel and bodyVel.Parent ~= r then bodyVel.Parent = r end
 
         local cam = workspace.CurrentCamera
         if not cam then return end
@@ -63,9 +60,19 @@ function FlyScript.Stop()
     if not running then return end
     running = false
     if connection then connection:Disconnect(); connection = nil end
-    if bodyVel then bodyVel:Destroy(); bodyVel = nil end
+    if bodyVel then pcall(function() bodyVel:Destroy() end); bodyVel = nil end
 
     local char = game.Players.LocalPlayer.Character
-    local hum = char and char:FindFirstChildOfClass("Humanoid")
-    if hum then hum.PlatformStand = false end
+    if char then
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        local hum = char:FindFirstChildOfClass("Humanoid")
+        if hrp then
+            hrp.AssemblyLinearVelocity = Vector3.zero
+            hrp.AssemblyAngularVelocity = Vector3.zero
+        end
+        if hum then
+            hum.PlatformStand = false
+            hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+        end
+    end
 end
