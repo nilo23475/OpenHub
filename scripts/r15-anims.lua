@@ -22,7 +22,6 @@ end
 
 local CATEGORIES = {
     ["Dances"] = {
-        { label="Michael Myers Shake", id="rbxassetid://118229457793841", looped=true },
         { label="Sturdy Dance",        id="rbxassetid://132967433846099", looped=true },
         { label="Get Sturdy",          id="rbxassetid://122884053950359", looped=true },
         { label="STURDY",              id="rbxassetid://128968764985212", looped=true },
@@ -30,7 +29,6 @@ local CATEGORIES = {
         { label="Moshing",             id="rbxassetid://96147994216119",  looped=true },
         { label="Hit Every Beat",      id="rbxassetid://136095999219650", looped=true },
         { label="Gangnam Style",       id="rbxassetid://129764254213842", looped=true },
-        { label="TV Time Dance",       id="rbxassetid://104748118296461", looped=true },
         { label="Snoop's Walk",        id="rbxassetid://110204898807330", looped=true },
         { label="Sturdy NYC Dance",    id="rbxassetid://140333103929828", looped=true },
         { label="Dougie",              id="rbxassetid://93650537970037",  looped=true },

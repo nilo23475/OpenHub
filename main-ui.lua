@@ -307,6 +307,7 @@ local CATEGORIES = {
         items = {
             { type = "button", name = "SimpleSpy", file = "simple-spy.lua" },
             { type = "button", name = "Cobalt Spy", file = "cobalt-spy.lua" },
+            { type = "button", name = "Dex++", file = "dex++.lua" },
             { type = "button", name = "Copy job ID to clipboard", file = "copy-jobID.lua" },
         }
     },
@@ -314,7 +315,6 @@ local CATEGORIES = {
         name = "Universal",
         items = {
             { type = "button", name = "Infinite Yield", file = "infinite-yield.lua" },
-            { type = "button", name = "Dex++", file = "dex++.lua" },
             { type = "button", name = "R15 Animations", file = "r15-anims.lua" },
         }
     }
