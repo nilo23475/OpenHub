@@ -315,6 +315,7 @@ local CATEGORIES = {
         items = {
             { type = "button", name = "Infinite Yield", file = "infinite-yield.lua" },
             { type = "button", name = "Dex++", file = "dex++.lua" },
+            { type = "button", name = "R15 Animations", file = "r15-anims.lua" },
         }
     }
 }
